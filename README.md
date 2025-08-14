@@ -12,3 +12,4 @@ Installs Zig compiler in GitHub Actions runner.
 uses: jetsung/install-zig@v1
 with:
   version: "0.14.1"
+```

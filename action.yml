@@ -10,5 +10,10 @@ inputs:
     required: false
     default: ""
 runs:
-  using: "bash"
-  main: "install.sh"
+  using: "composite"
+  steps:
+    - name: "Install Zig"
+      shell: bash
+      run: ${{ github.action_path }}/install.sh
+      env:
+        VERSION: ${{ inputs.version }}

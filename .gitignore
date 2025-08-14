@@ -8,3 +8,10 @@
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# act
+.actrc
+.artifacts
+event.json
+.secrets
+.arcenv

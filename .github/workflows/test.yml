@@ -1,0 +1,26 @@
+name: Test Install Zig Action
+
+on: [ push ]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - type: latest
+            version: 0.14.0
+          - type: master
+            version: master
+          - type: empty
+            version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Zig ${{ matrix.version }}
+        uses: ./ 
+        with:
+          version: ${{ matrix.version }}
+      - name: Check Zig version
+        run: zig version

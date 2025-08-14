@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION_INPUT="${INPUT_VERSION}"
+VERSION_INPUT="${VERSION:-}"
 
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 ARCH="$(uname -m)"
@@ -12,11 +12,15 @@ case "$ARCH" in
   *) echo "Unsupported architecture: $ARCH" && exit 1 ;;
 esac
 
-# sudo apt update -y
-# sudo apt install -y jq xz-utils
-
 if [[ -z "$VERSION_INPUT" ]]; then
-  VERSION=$(curl -s https://ziglang.org/download/index.json | jq -r '.latest.version')
+  VERSION=$(curl -s https://ziglang.org/download/index.json | \
+              jq -r 'keys 
+                | map(select(.!="master")) 
+                | sort_by(. | split(".") 
+                | map(tonumber)) 
+                | reverse 
+                | .[0]
+              ')
 elif [[ "$VERSION_INPUT" == "dev" || "$VERSION_INPUT" == "master" ]]; then
   VERSION="master"
 else
@@ -24,7 +28,9 @@ else
 fi
 
 PACKAGES_DIR="$HOME/zig"
-mkdir -p "$PACKAGES_DIR"
+sudo mkdir -p "$PACKAGES_DIR"
+
+export PATH="$PACKAGES_DIR:$PATH"
 
 if [[ "$VERSION" == "master" ]]; then
   URL=$(curl -s https://ziglang.org/download/index.json \
@@ -34,9 +40,11 @@ else
     | jq -r ".\"$VERSION\".\"${ARCH}-${OS}\".tarball")
 fi
 
-echo "Downloading Zig $VERSION for $ARCH-$OS from $URL"
-curl -L "$URL" | tar xJC "$PACKAGES_DIR" --strip-components=1
+# echo "Downloading Zig $VERSION for $ARCH-$OS from $URL"
+curl -fsSL "$URL" | sudo tar xJC "$PACKAGES_DIR" --strip-components=1
 
 echo "$PACKAGES_DIR" >> $GITHUB_PATH
-echo "Zig $VERSION installed successfully."
-zig version
+# echo "Zig $VERSION installed successfully."
+
+# zig version || true
+
