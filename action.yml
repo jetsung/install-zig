@@ -16,4 +16,4 @@ runs:
       shell: bash
       run: ${{ github.action_path }}/install.sh
       env:
-        VERSION: ${{ inputs.version }}
+        VERSION_INPUT: ${{ inputs.version }}
