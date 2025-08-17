@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-set -e
 
-VERSION_INPUT="${VERSION:-}"
+set -euo pipefail
+
+# support version as argument
+if [[ -n "${1:-}" ]]; then
+  VERSION_INPUT="$1"
+fi
+
+VERSION_INPUT="${VERSION_INPUT:-}"
 
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 ARCH="$(uname -m)"
@@ -27,7 +33,7 @@ else
   VERSION="$VERSION_INPUT"
 fi
 
-PACKAGES_DIR="$HOME/zig"
+PACKAGES_DIR="/opt/zig"
 sudo mkdir -p "$PACKAGES_DIR"
 
 export PATH="$PACKAGES_DIR:$PATH"
@@ -43,8 +49,12 @@ fi
 # echo "Downloading Zig $VERSION for $ARCH-$OS from $URL"
 curl -fsSL "$URL" | sudo tar xJC "$PACKAGES_DIR" --strip-components=1
 
-echo "$PACKAGES_DIR" >> $GITHUB_PATH
-# echo "Zig $VERSION installed successfully."
-
-# zig version || true
+if [[ -n "${GITHUB_PATH:-}" ]]; then
+  echo "$PACKAGES_DIR" >> "$GITHUB_PATH"
+else
+  echo "export PATH=$PACKAGES_DIR:\$PATH" >> /etc/profile
+  export PATH="$PACKAGES_DIR:$PATH"
+  echo "Zig $VERSION installed successfully."
+  zig version
+fi
 
